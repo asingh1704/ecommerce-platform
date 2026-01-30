@@ -35,7 +35,7 @@ jobs:
       - name: Validate docker-compose files
         run: |
           cd deployment/local
-          docker-compose -f docker-compose.infrastructure.yml config
+          docker compose -f docker-compose.infrastructure.yml config
           echo "✅ Docker Compose files are valid!"
 
 # NOTE: This is a template for learning
