@@ -1,0 +1,61 @@
+name: Service Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/Services/**'
+      - 'deployment/local/docker-compose.services.yml'
+      - '.github/workflows/deploy-services.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service:
+          - ProductService
+          - UserService
+          - CartService
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: |
+          cd src/Services/${{ matrix.service }}
+          dotnet restore
+      
+      - name: Build
+        run: |
+          cd src/Services/${{ matrix.service }}
+          dotnet build --no-restore --configuration Release
+      
+      - name: Test
+        run: |
+          cd src/Services/${{ matrix.service }}
+          dotnet test --no-build --configuration Release --verbosity normal
+      
+      - name: Build Docker image
+        run: |
+          cd src/Services/${{ matrix.service }}
+          docker build -t ecomm-${{ matrix.service }}:latest .
+      
+      # For cloud deployment:
+      # - name: Push to container registry
+      #   run: docker push your-registry/ecomm-${{ matrix.service }}:latest
+      
+      - name: Log deployment info
+        run: |
+          echo "Service: ${{ matrix.service }}"
+          echo "✅ Build successful"
+          echo "For local deployment:"
+          echo "docker-compose -f deployment/local/docker-compose.services.yml up -d"

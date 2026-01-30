@@ -1,0 +1,43 @@
+name: Infrastructure Deployment
+
+# Trigger on push to main branch or manually
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'deployment/local/**'
+      - '.github/workflows/deploy-infrastructure.yml'
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log infrastructure deployment
+        run: |
+          echo "Deploying infrastructure..."
+          echo "This would deploy to your infrastructure"
+          echo "For local development, run manually:"
+          echo "docker-compose -f deployment/local/docker-compose.infrastructure.yml up -d"
+      
+      # For actual deployment to cloud/remote server, you'd add:
+      # - SSH into server
+      # - Pull latest code
+      # - Run docker-compose
+      
+      - name: Validate docker-compose files
+        run: |
+          cd deployment/local
+          docker-compose -f docker-compose.infrastructure.yml config
+          echo "✅ Docker Compose files are valid!"
+
+# NOTE: This is a template for learning
+# For local deployment, you still run commands manually
+# For cloud deployment (AWS/Azure), you'd add deployment steps
